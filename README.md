@@ -3,6 +3,9 @@ A small clone of [1024](https://play.google.com/store/apps/details?id=com.veewo.
 
 Made just for fun. [Play it here!](http://gabrielecirulli.github.io/2048/)
 
+# Speed 2048
+A reiteration of 2048 with functioning multiplayer. Players can stop progression by waiting for the move timer to run out or filling up their board with no possible moves left. The player with the largest score wins, meaning that the goal of a 2048 block is less desirable.
+
 ### Contributions
 
  - [TimPetricola](https://github.com/TimPetricola) added best score storage
