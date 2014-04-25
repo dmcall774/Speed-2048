@@ -5,6 +5,8 @@ function GameManager(size, InputManager, Actuator, StorageManager) {
   this.actuator       = new Actuator;
 
   this.startTiles     = 2;
+  this.maxTime        = 3;
+  this.speedInterval  = 100;
 
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
@@ -43,9 +45,11 @@ GameManager.prototype.setup = function () {
     this.over        = previousState.over;
     this.won         = previousState.won;
     this.keepPlaying = previousState.keepPlaying;
+    this.timer       = this.maxTime;
   } else {
     this.grid        = new Grid(this.size);
     this.score       = 0;
+    this.timer       = this.maxTime;
     this.over        = false;
     this.won         = false;
     this.keepPlaying = false;
@@ -53,6 +57,12 @@ GameManager.prototype.setup = function () {
     // Add the initial tiles
     this.addStartTiles();
   }
+
+  this.actuator.updateBestScore(this.timer);
+  clearTimeout(this.timefunc);
+
+  var self = this;
+  this.timefunc = setTimeout(function() { self.tickTimer(); }, this.speedInterval);
 
   // Update the actuator
   this.actuate();
@@ -84,6 +94,9 @@ GameManager.prototype.actuate = function () {
   // Clear the state when the game is over (game over only, not win)
   if (this.over) {
     this.storageManager.clearGameState();
+    this.timer = 0;
+    this.actuator.updateBestScore(this.timer);
+    clearTimeout(this.timefunc);
   } else {
     this.storageManager.setGameState(this.serialize());
   }
@@ -187,6 +200,37 @@ GameManager.prototype.move = function (direction) {
     }
 
     this.actuate();
+  }
+
+  this.timer = this.maxTime;
+  this.actuator.updateBestScore(this.timer);
+  clearTimeout(this.timefunc);
+  this.timefunc = setTimeout(function() { self.tickTimer(); }, this.speedInterval);
+};
+
+GameManager.prototype.tickTimer = function() {
+  var self = this;
+
+  this.timer -= (this.speedInterval / 1000); // Subtract time (in seconds) from active timer
+  this.timer *= 10;
+  this.timer = Math.round(this.timer);
+  this.timer /= 10;
+
+  this.actuator.updateBestScore(this.timer);
+
+  if (this.timer <= 0) {
+    this.storageManager.clearGameState();
+    this.over = true;
+    this.actuator.timeOver({
+      over:       this.over,
+      won:        this.won,
+      terminated: this.isGameTerminated()
+    });
+
+    clearTimeout(this.timefunc);
+  } else {
+    clearTimeout(this.timefunc);
+    this.timefunc = setTimeout(function() { self.tickTimer(); }, this.speedInterval);
   }
 };
 
