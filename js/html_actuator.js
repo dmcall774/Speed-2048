@@ -23,7 +23,6 @@ HTMLActuator.prototype.actuate = function (grid, metadata) {
     });
 
     self.updateScore(metadata.score);
-    self.updateBestScore(metadata.bestScore);
 
     if (metadata.terminated) {
       if (metadata.over) {
@@ -34,6 +33,18 @@ HTMLActuator.prototype.actuate = function (grid, metadata) {
     }
 
   });
+};
+
+HTMLActuator.prototype.timeOver = function (metadata) {
+  var self = this;
+
+  if (metadata.terminated) {
+    if (metadata.over) {
+      self.message(false); // You lose
+    } else if (metadata.won) {
+      self.message(true); // You win!
+    }
+  }
 };
 
 // Continues the game (both restart and keep playing)
